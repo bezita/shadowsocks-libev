@@ -63,6 +63,7 @@ typedef struct {
     char *local_addr_v4;
     char *local_addr_v6;
     char *local_port;
+    char *outbound;
     char *password;
     char *key;
     char *method;

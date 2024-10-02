@@ -146,6 +146,7 @@ static int server_conn = 0;
 static char *plugin       = NULL;
 static char *remote_port  = NULL;
 static char *manager_addr = NULL;
+static char *outbound     = NULL;
 uint64_t tx               = 0;
 uint64_t rx               = 0;
 
@@ -689,6 +690,14 @@ connect_to_remote(EV_P_ struct addrinfo *res,
         ERROR("socket");
         close(sockfd);
         return NULL;
+    }
+
+    if (outbound) {
+        if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, outbound, strlen(outbound)) < 0) {
+            ERROR("setsockopt OutBound");
+            close(sockfd);
+            return NULL;
+        }
     }
 
     int opt = 1;
@@ -1980,6 +1989,9 @@ main(int argc, char **argv)
 
     if (conf_path != NULL) {
         jconf_t *conf = read_jconf(conf_path);
+        if (outbound == NULL){
+            outbound = conf->outbound;
+        }
         if (server_num == 0) {
             server_num = conf->remote_num;
             for (i = 0; i < server_num; i++)
